@@ -1,4 +1,4 @@
-import { PatchError, _deepClone, isInteger, unescapePathComponent, hasUndefined } from './helpers.mjs';
+import { PatchError, _deepClone, isInteger, unescapePathComponent, hasUndefined } from "./helpers.mjs";
 export var JsonPatchError = PatchError;
 export var deepClone = _deepClone;
 /* We use a Javascript hash to store each
@@ -10,6 +10,7 @@ export var deepClone = _deepClone;
 /* The operations applicable to an object */
 var objOps = {
     add: function (obj, key, document) {
+        console.log("adding a value");
         obj[key] = this.value;
         return { newDocument: document };
     },
@@ -31,14 +32,25 @@ var objOps = {
         if (removed) {
             removed = _deepClone(removed);
         }
-        var originalValue = applyOperation(document, { op: "remove", path: this.from }).removed;
-        applyOperation(document, { op: "add", path: this.path, value: originalValue });
+        var originalValue = applyOperation(document, {
+            op: "remove",
+            path: this.from
+        }).removed;
+        applyOperation(document, {
+            op: "add",
+            path: this.path,
+            value: originalValue
+        });
         return { newDocument: document, removed: removed };
     },
     copy: function (obj, key, document) {
         var valueToCopy = getValueByPointer(document, this.from);
         // enforce copy by value so further operations don't affect source (see issue #177)
-        applyOperation(document, { op: "add", path: this.path, value: _deepClone(valueToCopy) });
+        applyOperation(document, {
+            op: "add",
+            path: this.path,
+            value: _deepClone(valueToCopy)
+        });
         return { newDocument: document };
     },
     test: function (obj, key, document) {
@@ -55,7 +67,8 @@ var arrOps = {
         if (isInteger(i)) {
             arr.splice(i, 0, this.value);
         }
-        else { // array props
+        else {
+            // array props
             arr[i] = this.value;
         }
         // this may be needed when using '-' in an array
@@ -84,7 +97,7 @@ var arrOps = {
  * @return The retrieved value
  */
 export function getValueByPointer(document, pointer) {
-    if (pointer == '') {
+    if (pointer == "") {
         return document;
     }
     var getOriginalDestination = { op: "_get", path: pointer };
@@ -111,7 +124,7 @@ export function applyOperation(document, operation, validateOperation, mutateDoc
     if (banPrototypeModifications === void 0) { banPrototypeModifications = true; }
     if (index === void 0) { index = 0; }
     if (validateOperation) {
-        if (typeof validateOperation == 'function') {
+        if (typeof validateOperation == "function") {
             validateOperation(operation, 0, document, operation.path);
         }
         else {
@@ -121,42 +134,46 @@ export function applyOperation(document, operation, validateOperation, mutateDoc
     /* ROOT OPERATIONS */
     if (operation.path === "") {
         var returnValue = { newDocument: document };
-        if (operation.op === 'add') {
+        if (operation.op === "add") {
             returnValue.newDocument = operation.value;
             return returnValue;
         }
-        else if (operation.op === 'replace') {
+        else if (operation.op === "replace") {
             returnValue.newDocument = operation.value;
             returnValue.removed = document; //document we removed
             return returnValue;
         }
-        else if (operation.op === 'move' || operation.op === 'copy') { // it's a move or copy to root
+        else if (operation.op === "move" || operation.op === "copy") {
+            // it's a move or copy to root
             returnValue.newDocument = getValueByPointer(document, operation.from); // get the value by json-pointer in `from` field
-            if (operation.op === 'move') { // report removed item
+            if (operation.op === "move") {
+                // report removed item
                 returnValue.removed = document;
             }
             return returnValue;
         }
-        else if (operation.op === 'test') {
+        else if (operation.op === "test") {
             returnValue.test = _areEquals(document, operation.value);
             if (returnValue.test === false) {
-                throw new JsonPatchError("Test operation failed", 'TEST_OPERATION_FAILED', index, operation, document);
+                throw new JsonPatchError("Test operation failed", "TEST_OPERATION_FAILED", index, operation, document);
             }
             returnValue.newDocument = document;
             return returnValue;
         }
-        else if (operation.op === 'remove') { // a remove on root
+        else if (operation.op === "remove") {
+            // a remove on root
             returnValue.removed = document;
             returnValue.newDocument = null;
             return returnValue;
         }
-        else if (operation.op === '_get') {
+        else if (operation.op === "_get") {
             operation.value = document;
             return returnValue;
         }
-        else { /* bad operation */
+        else {
+            /* bad operation */
             if (validateOperation) {
-                throw new JsonPatchError('Operation `op` property is not one of operations defined in RFC-6902', 'OPERATION_OP_INVALID', index, operation, document);
+                throw new JsonPatchError("Operation `op` property is not one of operations defined in RFC-6902", "OPERATION_OP_INVALID", index, operation, document);
             }
             else {
                 return returnValue;
@@ -168,14 +185,14 @@ export function applyOperation(document, operation, validateOperation, mutateDoc
             document = _deepClone(document);
         }
         var path = operation.path || "";
-        var keys = path.split('/');
+        var keys = path.split("/");
         var obj = document;
         var t = 1; //skip empty element - http://jsperf.com/to-shift-or-not-to-shift
         var len = keys.length;
         var existingPathFragment = undefined;
         var key = void 0;
         var validateFunction = void 0;
-        if (typeof validateOperation == 'function') {
+        if (typeof validateOperation == "function") {
             validateFunction = validateOperation;
         }
         else {
@@ -183,13 +200,13 @@ export function applyOperation(document, operation, validateOperation, mutateDoc
         }
         while (true) {
             key = keys[t];
-            if (banPrototypeModifications && key == '__proto__') {
-                throw new TypeError('JSON-Patch: modifying `__proto__` prop is banned for security reasons, if this was on purpose, please set `banPrototypeModifications` flag false and pass it to this function. More info in fast-json-patch README');
+            if (banPrototypeModifications && key == "__proto__") {
+                throw new TypeError("JSON-Patch: modifying `__proto__` prop is banned for security reasons, if this was on purpose, please set `banPrototypeModifications` flag false and pass it to this function. More info in fast-json-patch README");
             }
             if (validateOperation) {
                 if (existingPathFragment === undefined) {
                     if (obj[key] === undefined) {
-                        existingPathFragment = keys.slice(0, t).join('/');
+                        existingPathFragment = keys.slice(0, t).join("/");
                     }
                     else if (t == len - 1) {
                         existingPathFragment = operation.path;
@@ -201,7 +218,7 @@ export function applyOperation(document, operation, validateOperation, mutateDoc
             }
             t++;
             if (Array.isArray(obj)) {
-                if (key === '-') {
+                if (key === "-") {
                     key = obj.length;
                 }
                 else {
@@ -218,19 +235,19 @@ export function applyOperation(document, operation, validateOperation, mutateDoc
                     }
                     var returnValue = arrOps[operation.op].call(operation, obj, key, document); // Apply patch
                     if (returnValue.test === false) {
-                        throw new JsonPatchError("Test operation failed", 'TEST_OPERATION_FAILED', index, operation, document);
+                        throw new JsonPatchError("Test operation failed", "TEST_OPERATION_FAILED", index, operation, document);
                     }
                     return returnValue;
                 }
             }
             else {
-                if (key && key.indexOf('~') != -1) {
+                if (key && key.indexOf("~") != -1) {
                     key = unescapePathComponent(key);
                 }
                 if (t >= len) {
                     var returnValue = objOps[operation.op].call(operation, obj, key, document); // Apply patch
                     if (returnValue.test === false) {
-                        throw new JsonPatchError("Test operation failed", 'TEST_OPERATION_FAILED', index, operation, document);
+                        throw new JsonPatchError("Test operation failed", "TEST_OPERATION_FAILED", index, operation, document);
                     }
                     return returnValue;
                 }
@@ -258,7 +275,7 @@ export function applyPatch(document, patch, validateOperation, mutateDocument, b
     if (banPrototypeModifications === void 0) { banPrototypeModifications = true; }
     if (validateOperation) {
         if (!Array.isArray(patch)) {
-            throw new JsonPatchError('Patch sequence must be an array', 'SEQUENCE_NOT_AN_ARRAY');
+            throw new JsonPatchError("Patch sequence must be an array", "SEQUENCE_NOT_AN_ARRAY");
         }
     }
     if (!mutateDocument) {
@@ -284,8 +301,9 @@ export function applyPatch(document, patch, validateOperation, mutateDocument, b
  */
 export function applyReducer(document, operation, index) {
     var operationResult = applyOperation(document, operation);
-    if (operationResult.test === false) { // failed test
-        throw new JsonPatchError("Test operation failed", 'TEST_OPERATION_FAILED', index, operation, document);
+    if (operationResult.test === false) {
+        // failed test
+        throw new JsonPatchError("Test operation failed", "TEST_OPERATION_FAILED", index, operation, document);
     }
     return operationResult.newDocument;
 }
@@ -297,46 +315,61 @@ export function applyReducer(document, operation, index) {
  * @param {string} [existingPathFragment] - comes along with `document`
  */
 export function validator(operation, index, document, existingPathFragment) {
-    if (typeof operation !== 'object' || operation === null || Array.isArray(operation)) {
-        throw new JsonPatchError('Operation is not an object', 'OPERATION_NOT_AN_OBJECT', index, operation, document);
+    if (typeof operation !== "object" ||
+        operation === null ||
+        Array.isArray(operation)) {
+        throw new JsonPatchError("Operation is not an object", "OPERATION_NOT_AN_OBJECT", index, operation, document);
     }
     else if (!objOps[operation.op]) {
-        throw new JsonPatchError('Operation `op` property is not one of operations defined in RFC-6902', 'OPERATION_OP_INVALID', index, operation, document);
+        throw new JsonPatchError("Operation `op` property is not one of operations defined in RFC-6902", "OPERATION_OP_INVALID", index, operation, document);
     }
-    else if (typeof operation.path !== 'string') {
-        throw new JsonPatchError('Operation `path` property is not a string', 'OPERATION_PATH_INVALID', index, operation, document);
+    else if (typeof operation.path !== "string") {
+        throw new JsonPatchError("Operation `path` property is not a string", "OPERATION_PATH_INVALID", index, operation, document);
     }
-    else if (operation.path.indexOf('/') !== 0 && operation.path.length > 0) {
+    else if (operation.path.indexOf("/") !== 0 && operation.path.length > 0) {
         // paths that aren't empty string should start with "/"
-        throw new JsonPatchError('Operation `path` property must start with "/"', 'OPERATION_PATH_INVALID', index, operation, document);
+        throw new JsonPatchError('Operation `path` property must start with "/"', "OPERATION_PATH_INVALID", index, operation, document);
     }
-    else if ((operation.op === 'move' || operation.op === 'copy') && typeof operation.from !== 'string') {
-        throw new JsonPatchError('Operation `from` property is not present (applicable in `move` and `copy` operations)', 'OPERATION_FROM_REQUIRED', index, operation, document);
+    else if ((operation.op === "move" || operation.op === "copy") &&
+        typeof operation.from !== "string") {
+        throw new JsonPatchError("Operation `from` property is not present (applicable in `move` and `copy` operations)", "OPERATION_FROM_REQUIRED", index, operation, document);
     }
-    else if ((operation.op === 'add' || operation.op === 'replace' || operation.op === 'test') && operation.value === undefined) {
-        throw new JsonPatchError('Operation `value` property is not present (applicable in `add`, `replace` and `test` operations)', 'OPERATION_VALUE_REQUIRED', index, operation, document);
+    else if ((operation.op === "add" ||
+        operation.op === "replace" ||
+        operation.op === "test") &&
+        operation.value === undefined) {
+        throw new JsonPatchError("Operation `value` property is not present (applicable in `add`, `replace` and `test` operations)", "OPERATION_VALUE_REQUIRED", index, operation, document);
     }
-    else if ((operation.op === 'add' || operation.op === 'replace' || operation.op === 'test') && hasUndefined(operation.value)) {
-        throw new JsonPatchError('Operation `value` property is not present (applicable in `add`, `replace` and `test` operations)', 'OPERATION_VALUE_CANNOT_CONTAIN_UNDEFINED', index, operation, document);
+    else if ((operation.op === "add" ||
+        operation.op === "replace" ||
+        operation.op === "test") &&
+        hasUndefined(operation.value)) {
+        throw new JsonPatchError("Operation `value` property is not present (applicable in `add`, `replace` and `test` operations)", "OPERATION_VALUE_CANNOT_CONTAIN_UNDEFINED", index, operation, document);
     }
     else if (document) {
         if (operation.op == "add") {
             var pathLen = operation.path.split("/").length;
             var existingPathLen = existingPathFragment.split("/").length;
             if (pathLen !== existingPathLen + 1 && pathLen !== existingPathLen) {
-                throw new JsonPatchError('Cannot perform an `add` operation at the desired path', 'OPERATION_PATH_CANNOT_ADD', index, operation, document);
+                throw new JsonPatchError("Cannot perform an `add` operation at the desired path", "OPERATION_PATH_CANNOT_ADD", index, operation, document);
             }
         }
-        else if (operation.op === 'replace' || operation.op === 'remove' || operation.op === '_get') {
+        else if (operation.op === "replace" ||
+            operation.op === "remove" ||
+            operation.op === "_get") {
             if (operation.path !== existingPathFragment) {
-                throw new JsonPatchError('Cannot perform the operation at a path that does not exist', 'OPERATION_PATH_UNRESOLVABLE', index, operation, document);
+                throw new JsonPatchError("Cannot perform the operation at a path that does not exist", "OPERATION_PATH_UNRESOLVABLE", index, operation, document);
             }
         }
-        else if (operation.op === 'move' || operation.op === 'copy') {
-            var existingValue = { op: "_get", path: operation.from, value: undefined };
+        else if (operation.op === "move" || operation.op === "copy") {
+            var existingValue = {
+                op: "_get",
+                path: operation.from,
+                value: undefined
+            };
             var error = validate([existingValue], document);
-            if (error && error.name === 'OPERATION_PATH_UNRESOLVABLE') {
-                throw new JsonPatchError('Cannot perform the operation from a path that does not exist', 'OPERATION_FROM_UNRESOLVABLE', index, operation, document);
+            if (error && error.name === "OPERATION_PATH_UNRESOLVABLE") {
+                throw new JsonPatchError("Cannot perform the operation from a path that does not exist", "OPERATION_FROM_UNRESOLVABLE", index, operation, document);
             }
         }
     }
@@ -351,7 +384,7 @@ export function validator(operation, index, document, existingPathFragment) {
 export function validate(sequence, document, externalValidator) {
     try {
         if (!Array.isArray(sequence)) {
-            throw new JsonPatchError('Patch sequence must be an array', 'SEQUENCE_NOT_AN_ARRAY');
+            throw new JsonPatchError("Patch sequence must be an array", "SEQUENCE_NOT_AN_ARRAY");
         }
         if (document) {
             //clone document and sequence so that we can safely try applying operations
@@ -394,7 +427,7 @@ export function validate(sequence, document, externalValidator) {
 export function _areEquals(a, b) {
     if (a === b)
         return true;
-    if (a && b && typeof a == 'object' && typeof b == 'object') {
+    if (a && b && typeof a == "object" && typeof b == "object") {
         var arrA = Array.isArray(a), arrB = Array.isArray(b), i, length, key;
         if (arrA && arrB) {
             length = a.length;
@@ -423,4 +456,3 @@ export function _areEquals(a, b) {
     }
     return a !== a && b !== b;
 }
-;

@@ -1,4 +1,4 @@
-import { PatchError, _deepClone } from './helpers.js';
+import { PatchError, _deepClone } from "./helpers.js";
 export declare const JsonPatchError: typeof PatchError;
 export declare const deepClone: typeof _deepClone;
 export declare type Operation = AddOperation<any> | RemoveOperation | ReplaceOperation<any> | MoveOperation | CopyOperation | TestOperation<any> | GetOperation<any>;
@@ -14,30 +14,30 @@ export interface BaseOperation {
     path: string;
 }
 export interface AddOperation<T> extends BaseOperation {
-    op: 'add';
+    op: "add";
     value: T;
 }
 export interface RemoveOperation extends BaseOperation {
-    op: 'remove';
+    op: "remove";
 }
 export interface ReplaceOperation<T> extends BaseOperation {
-    op: 'replace';
+    op: "replace";
     value: T;
 }
 export interface MoveOperation extends BaseOperation {
-    op: 'move';
+    op: "move";
     from: string;
 }
 export interface CopyOperation extends BaseOperation {
-    op: 'copy';
+    op: "copy";
     from: string;
 }
 export interface TestOperation<T> extends BaseOperation {
-    op: 'test';
+    op: "test";
     value: T;
 }
 export interface GetOperation<T> extends BaseOperation {
-    op: '_get';
+    op: "_get";
     value: T;
 }
 export interface PatchResult<T> extends Array<OperationResult<T>> {
