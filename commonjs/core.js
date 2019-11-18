@@ -1,4 +1,5 @@
 Object.defineProperty(exports, "__esModule", { value: true });
+var vue_1 = require("vue");
 var helpers_js_1 = require("./helpers.js");
 exports.JsonPatchError = helpers_js_1.PatchError;
 exports.deepClone = helpers_js_1._deepClone;
@@ -11,18 +12,23 @@ exports.deepClone = helpers_js_1._deepClone;
 /* The operations applicable to an object */
 var objOps = {
     add: function (obj, key, document) {
-        console.log("adding a value");
-        obj[key] = this.value;
+        // obj[key] = this.value;
+        console.log("JSON-Patch, add operation");
+        vue_1.default.set(obj, key, this.value);
         return { newDocument: document };
     },
     remove: function (obj, key, document) {
         var removed = obj[key];
-        delete obj[key];
+        // delete obj[key];
+        console.log("JSON-Patch, remove operation");
+        vue_1.default.delete(obj, key);
         return { newDocument: document, removed: removed };
     },
     replace: function (obj, key, document) {
         var removed = obj[key];
-        obj[key] = this.value;
+        // obj[key] = this.value;
+        console.log("JSON-Patch, replace operation");
+        vue_1.default.set(obj, key, this.value);
         return { newDocument: document, removed: removed };
     },
     move: function (obj, key, document) {
@@ -70,7 +76,9 @@ var arrOps = {
         }
         else {
             // array props
-            arr[i] = this.value;
+            // arr[i] = this.value;
+            console.log("JSON-Patch, array-add operation");
+            vue_1.default.set(arr, i, this.value);
         }
         // this may be needed when using '-' in an array
         return { newDocument: document, index: i };
@@ -81,7 +89,9 @@ var arrOps = {
     },
     replace: function (arr, i, document) {
         var removed = arr[i];
-        arr[i] = this.value;
+        // arr[i] = this.value;
+        console.log("JSON-Patch, array-replace operation");
+        vue_1.default.set(arr, i, this.value);
         return { newDocument: document, removed: removed };
     },
     move: objOps.move,
