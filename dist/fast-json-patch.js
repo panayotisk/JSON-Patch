@@ -1,4 +1,4 @@
-/*! fast-json-patch, version: 3.0.0-1 */
+/*! fast-json-patch, version: 3.0.0-3 */
 var jsonpatch =
 /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
@@ -303,8 +303,11 @@ exports.PatchError = PatchError;
 /* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-var vue_1 = __webpack_require__(4);
+var vue_1 = __importDefault(__webpack_require__(4));
 var helpers_js_1 = __webpack_require__(1);
 exports.JsonPatchError = helpers_js_1.PatchError;
 exports.deepClone = helpers_js_1._deepClone;

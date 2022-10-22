@@ -12,21 +12,18 @@ export var deepClone = _deepClone;
 var objOps = {
     add: function (obj, key, document) {
         // obj[key] = this.value;
-        console.log("JSON-Patch, add operation");
         Vue.set(obj, key, this.value);
         return { newDocument: document };
     },
     remove: function (obj, key, document) {
         var removed = obj[key];
         // delete obj[key];
-        console.log("JSON-Patch, remove operation");
         Vue.delete(obj, key);
         return { newDocument: document, removed: removed };
     },
     replace: function (obj, key, document) {
         var removed = obj[key];
         // obj[key] = this.value;
-        console.log("JSON-Patch, replace operation");
         Vue.set(obj, key, this.value);
         return { newDocument: document, removed: removed };
     },
@@ -76,7 +73,6 @@ var arrOps = {
         else {
             // array props
             // arr[i] = this.value;
-            console.log("JSON-Patch, array-add operation");
             Vue.set(arr, i, this.value);
         }
         // this may be needed when using '-' in an array
@@ -89,7 +85,6 @@ var arrOps = {
     replace: function (arr, i, document) {
         var removed = arr[i];
         // arr[i] = this.value;
-        console.log("JSON-Patch, array-replace operation");
         Vue.set(arr, i, this.value);
         return { newDocument: document, removed: removed };
     },
