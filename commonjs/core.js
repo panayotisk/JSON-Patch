@@ -16,21 +16,18 @@ exports.deepClone = helpers_js_1._deepClone;
 var objOps = {
     add: function (obj, key, document) {
         // obj[key] = this.value;
-        console.log("JSON-Patch, add operation");
         vue_1.default.set(obj, key, this.value);
         return { newDocument: document };
     },
     remove: function (obj, key, document) {
         var removed = obj[key];
         // delete obj[key];
-        console.log("JSON-Patch, remove operation");
         vue_1.default.delete(obj, key);
         return { newDocument: document, removed: removed };
     },
     replace: function (obj, key, document) {
         var removed = obj[key];
         // obj[key] = this.value;
-        console.log("JSON-Patch, replace operation");
         vue_1.default.set(obj, key, this.value);
         return { newDocument: document, removed: removed };
     },
