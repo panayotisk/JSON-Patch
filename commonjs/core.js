@@ -77,7 +77,6 @@ var arrOps = {
         else {
             // array props
             // arr[i] = this.value;
-            console.log("JSON-Patch, array-add operation");
             vue_1.default.set(arr, i, this.value);
         }
         // this may be needed when using '-' in an array
@@ -90,7 +89,6 @@ var arrOps = {
     replace: function (arr, i, document) {
         var removed = arr[i];
         // arr[i] = this.value;
-        console.log("JSON-Patch, array-replace operation");
         vue_1.default.set(arr, i, this.value);
         return { newDocument: document, removed: removed };
     },
