@@ -93,21 +93,18 @@ export interface PatchResult<T> extends Array<OperationResult<T>> {
 const objOps = {
   add: function(obj, key, document) {
     // obj[key] = this.value;
-    console.log("JSON-Patch, add operation");
     Vue.set(obj, key, this.value);
     return { newDocument: document };
   },
   remove: function(obj, key, document) {
     var removed = obj[key];
     // delete obj[key];
-    console.log("JSON-Patch, remove operation");
     Vue.delete(obj, key);
     return { newDocument: document, removed };
   },
   replace: function(obj, key, document) {
     var removed = obj[key];
     // obj[key] = this.value;
-    console.log("JSON-Patch, replace operation");
     Vue.set(obj, key, this.value);
     return { newDocument: document, removed };
   },
